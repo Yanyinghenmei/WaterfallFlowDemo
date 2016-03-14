@@ -57,7 +57,13 @@
     }];
     
     CGFloat itemW = (self.collectionView.bounds.size.width - _sectionInset.left - _sectionInset.right - (_lineNum-1)*_lineSpaceing)/_lineNum;
-    CGFloat itemH = _block(indexPath, itemW);
+    
+    CGFloat itemH;
+    if (_block) {
+        itemH = _block(indexPath, itemW);
+    } else {
+        itemH = 0;
+    }
     
     CGFloat itemX = [minHeightKey intValue] * (_lineSpaceing+itemW) + _sectionInset.left;
     CGFloat itemY = [_heightSumDic[minHeightKey] doubleValue];
@@ -67,6 +73,7 @@
     attr.frame = CGRectMake(itemX, itemY, itemW, itemH);
     return attr;
 }
+
 // 3.返回所有item的属性
 - (NSArray<UICollectionViewLayoutAttributes *> *)layoutAttributesForElementsInRect:(CGRect)rect {
     return _itemAttrsArr;
@@ -80,18 +87,17 @@
 
 // 4.设置可滚动区域
 - (CGSize)collectionViewContentSize {
-    __block NSString *minHeightKey = @"0";
+    __block NSString *maxHeightKey = @"0";
     [_heightSumDic enumerateKeysAndObjectsUsingBlock:^(NSString *key, id  _Nonnull obj, BOOL * _Nonnull stop) {
-        if ([_heightSumDic[minHeightKey] doubleValue]>[obj doubleValue]) {
-            minHeightKey = key;
+        if ([_heightSumDic[maxHeightKey] doubleValue]<[obj doubleValue]) {
+            maxHeightKey = key;
         }
     }];
-    return CGSizeMake(self.collectionView.bounds.size.width, [_heightSumDic[minHeightKey] doubleValue]);
+    return CGSizeMake(self.collectionView.bounds.size.width, [_heightSumDic[maxHeightKey] doubleValue]);
 }
 
 - (BOOL)shouldInvalidateLayoutForBoundsChange:(CGRect)newBounds {
-    NSLog(@"%lf, %lf, %lf, %lf", newBounds.origin.x, newBounds.origin.y, newBounds.size.width, newBounds.size.height);
-    return YES;
+    return NO;
 }
 
 
